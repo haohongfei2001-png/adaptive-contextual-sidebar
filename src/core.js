@@ -34,6 +34,7 @@
     return {
       update(tabId, route) {
         const prior = tabs.get(tabId) || { epoch: 0, route: null };
+        if (prior.route === route) return prior;
         const next = { epoch: prior.epoch + 1, route };
         tabs.set(tabId, next);
         return next;
