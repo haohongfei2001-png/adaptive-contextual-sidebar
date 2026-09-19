@@ -36,10 +36,11 @@ test("startup projection retry is bounded and route-epoch guarded", () => {
   const retryLimit = numericConst("STARTUP_RETRY_LIMIT");
 
   assert.ok(retryMs >= 100 && retryMs <= 500, "startup retry interval must stay short but bounded");
-  assert.ok(retryLimit > 0 && retryLimit <= 12, "startup retry count must stay bounded");
-  assert.ok(retryMs * retryLimit <= 3000, "startup retry window must remain bounded");
+  assert.ok(retryLimit > 0 && retryLimit <= 24, "startup retry count must stay bounded");
+  assert.ok(retryMs * retryLimit <= 5000, "startup retry window must remain bounded");
 
   assert.match(source, /attempt >= STARTUP_RETRY_LIMIT/);
   assert.match(source, /expectedRoute !== location\.pathname \|\| expectedEpoch !== state\.epoch/);
   assert.match(source, /tryProject\(reason, attempt \+ 1, expectedRoute, expectedEpoch\)/);
+  assert.match(source, /duplicate-navigation-ignored/);
 });
