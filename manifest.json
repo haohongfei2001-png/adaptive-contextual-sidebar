@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "ACS Capability Spike",
+  "version": "0.0.1",
+  "description": "ACS-00 reversible native-slot capability probe.",
+  "permissions": ["webNavigation"],
+  "host_permissions": ["https://chatgpt.com/*"],
+  "background": {
+    "service_worker": "src/service-worker.js"
+  },
+  "content_scripts": [{
+    "matches": ["https://chatgpt.com/*"],
+    "js": ["src/core.js", "src/adapter.js", "src/content.js"],
+    "run_at": "document_idle"
+  }]
+}
