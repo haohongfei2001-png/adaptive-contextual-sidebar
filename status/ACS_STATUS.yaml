@@ -1,0 +1,47 @@
+package: ACS-v0.1
+product: Adaptive Contextual Sidebar
+design_version: "0.1.0"
+design_status: DESIGN_FROZEN
+implementation_status: NOT_STARTED
+source_of_truth: github_remote_main
+
+canonical:
+  design: docs/FROZEN_DESIGN_v0.1.md
+  agents: AGENTS.md
+  protocol: docs/EXECUTION_PROTOCOL.md
+  status: status/ACS_STATUS.yaml
+
+current_round:
+  id: ACS-00
+  title: Live Capability Spike
+  status: READY
+  authorized: false
+  report: docs/reports/ACS-00_CAPABILITY_REPORT.md
+
+next_round:
+  id: ACS-01
+  title: Domain objects, scope partitioning, storage, idempotency, revision and purge foundations
+  status: LOCKED
+  requires_new_owner_instruction: true
+
+rounds:
+  ACS-00: READY
+  ACS-01: LOCKED
+  ACS-02: LOCKED
+  ACS-03: LOCKED
+  ACS-04: LOCKED
+  ACS-05: LOCKED
+  ACS-06: LOCKED
+  ACS-07: LOCKED
+
+allowed_terminal_outcomes:
+  - COMPLETE
+  - LIMITED
+  - PRIVATE_SPIKE
+  - BLOCKED
+  - NO_GO
+
+notes:
+  - "Design freeze does not constitute implementation authorization."
+  - "ACS-00 is capability validation only; no AI, behavior-learning product algorithm, PAIA integration, Workspace management, or later-round implementation."
+  - "A separate explicit user instruction is required to execute ACS-00."
