@@ -3,6 +3,9 @@
 
   const adapter = globalThis.ACSSurfaceAdapter;
   const core = globalThis.ACSCore;
+  const LEASE_TTL_MS = 1800;
+  const LEASE_RENEW_MS = 500;
+  const WORKER_PROBE_MS = 1000;
   const state = {
     tabId: null,
     epoch: 0,
@@ -10,22 +13,68 @@
     mode: "native",
     nativeList: null,
     projection: null,
-    priorDisplay: "",
-    mountToken: 0
+    priorStyleAttr: null,
+    mountToken: 0,
+    leaseStyle: null,
+    leasePhase: 0,
+    leaseRenewedAt: 0
   };
 
   function log(event, detail = {}) {
     console.debug("[ACS-00]", event, { route: core.redactPath(state.route), epoch: state.epoch, ...detail });
   }
 
+  function ensureLeaseStyle() {
+    if (state.leaseStyle?.isConnected) return;
+    const style = document.createElement("style");
+    style.setAttribute("data-acs-lease-style", "true");
+    style.textContent = [
+      "@keyframes acs00NativeLeaseA{0%,99%{max-height:0;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none}100%{max-height:100000px;overflow:visible;opacity:1;visibility:visible;pointer-events:auto}}",
+      "@keyframes acs00NativeLeaseB{0%,99%{max-height:0;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none}100%{max-height:100000px;overflow:visible;opacity:1;visibility:visible;pointer-events:auto}}",
+      "@keyframes acs00ProjectionLeaseA{0%,99%{max-height:100000px;opacity:1;visibility:visible;pointer-events:auto}100%{max-height:0;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0}}",
+      "@keyframes acs00ProjectionLeaseB{0%,99%{max-height:100000px;opacity:1;visibility:visible;pointer-events:auto}100%{max-height:0;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0}}"
+    ].join("\n");
+    (document.head || document.documentElement).append(style);
+    state.leaseStyle = style;
+  }
+
+  function applyLeaseAnimation(node, name) {
+    node.style.animationName = name;
+    node.style.animationDuration = `${LEASE_TTL_MS}ms`;
+    node.style.animationTimingFunction = "linear";
+    node.style.animationFillMode = "forwards";
+    node.style.animationIterationCount = "1";
+  }
+
+  function renewConcealLease(reason) {
+    if (state.mode !== "projection" || !state.nativeList?.isConnected || !state.projection?.isConnected) return;
+    const now = performance.now();
+    if (state.leaseRenewedAt && now - state.leaseRenewedAt > LEASE_TTL_MS) {
+      restoreNative("conceal-lease-expired");
+      return;
+    }
+    state.leaseRenewedAt = now;
+    state.leasePhase ^= 1;
+    const suffix = state.leasePhase ? "B" : "A";
+    applyLeaseAnimation(state.nativeList, `acs00NativeLease${suffix}`);
+    applyLeaseAnimation(state.projection, `acs00ProjectionLease${suffix}`);
+    log("conceal-lease-renewed", { reason });
+  }
+
   function restoreNative(reason) {
     if (state.nativeList?.isConnected) {
-      state.nativeList.style.display = state.priorDisplay;
+      if (state.priorStyleAttr === null) state.nativeList.removeAttribute("style");
+      else state.nativeList.setAttribute("style", state.priorStyleAttr);
       state.nativeList.removeAttribute("data-acs-native-hidden");
     }
     if (state.projection?.isConnected) state.projection.remove();
+    state.leaseStyle?.remove();
     state.nativeList = null;
     state.projection = null;
+    state.priorStyleAttr = null;
+    state.leaseStyle = null;
+    state.leasePhase = 0;
+    state.leaseRenewedAt = 0;
     state.mode = "native";
     log("native-restored", { reason });
   }
@@ -66,13 +115,14 @@
     if (refs.length < 2) return log("fail-open", { reason: "insufficient-refs" });
     if (token !== state.mountToken) return;
     state.nativeList = list;
-    state.priorDisplay = list.style.display;
+    state.priorStyleAttr = list.getAttribute("style");
     const projection = buildProjection(refs);
     list.parentElement.insertBefore(projection, list);
     list.setAttribute("data-acs-native-hidden", "true");
-    list.style.display = "none";
     state.projection = projection;
     state.mode = "projection";
+    ensureLeaseStyle();
+    renewConcealLease("mount");
     log("projection-mounted", { reason, refs: refs.length });
   }
 
@@ -124,7 +174,8 @@
   }
 
   registerWithWorker("initial-register");
-  setInterval(() => registerWithWorker("reconnect-probe"), 10000);
+  setInterval(() => renewConcealLease("heartbeat"), LEASE_RENEW_MS);
+  setInterval(() => registerWithWorker("reconnect-probe"), WORKER_PROBE_MS);
 
   globalThis.__ACS00_DIAGNOSTICS__ = {
     snapshot: () => ({
