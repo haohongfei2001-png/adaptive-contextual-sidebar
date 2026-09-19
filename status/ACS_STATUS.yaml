@@ -2,7 +2,7 @@ package: ACS-v0.1
 product: Adaptive Contextual Sidebar
 design_version: "0.1.0"
 design_status: DESIGN_FROZEN
-implementation_status: CAPABILITY_SPIKE
+implementation_status: PRIVATE_SPIKE
 source_of_truth: github_remote_main
 
 canonical:
@@ -14,11 +14,12 @@ canonical:
 current_round:
   id: ACS-00
   title: Live Capability Spike
-  status: IN_PROGRESS
+  status: PRIVATE_SPIKE
   authorized: true
-  previous_outcome: PRIVATE_SPIKE
-  investigation_scope: THREE_BLOCKER_CLOSURE_ONLY
+  outcome: PRIVATE_SPIKE
+  closed_on: "2026-09-19"
   report: docs/reports/ACS-00_CAPABILITY_REPORT.md
+  blocker_closure_report: docs/reports/ACS-00_BLOCKER_CLOSURE_INVESTIGATION.md
 
 next_round:
   id: ACS-01
@@ -27,7 +28,7 @@ next_round:
   requires_new_owner_instruction: true
 
 rounds:
-  ACS-00: IN_PROGRESS
+  ACS-00: PRIVATE_SPIKE
   ACS-01: LOCKED
   ACS-02: LOCKED
   ACS-03: LOCKED
@@ -43,13 +44,23 @@ allowed_terminal_outcomes:
   - BLOCKED
   - NO_GO
 
+blocker_closure:
+  B1_scope_key:
+    status: CONFIRMED_UNRESOLVED
+    summary: "No stable verifiable public account/native-workspace scope key has been proven; same-browser account switching makes browser/session/install identifiers unsafe as scope keys."
+  B2_authenticated_mv3_recovery:
+    status: TEST_ENVIRONMENT_BLOCKED
+    summary: "Authenticated developer-mode load/reload/disable recovery remains unproven; macOS denied coordinate assistive automation and no Chrome DevTools extension-lifecycle connector was available."
+  B3_route_content_ownership:
+    status: SAFE_FAIL_CLOSED_UNVERIFIED
+    summary: "No reliable route-to-render ownership proof was established; remote-main ACS-00 runtime contains no conversation-body/user-message extraction path, so extraction remains disabled."
+
 blockers:
-  - "No stable verifiable public account/native-workspace scope key was observed on the tested ChatGPT Web surface; persistent cross-scope cache reuse is unsafe."
-  - "Authenticated developer-mode execution of the unpacked MV3 prototype, including disable/reload recovery while projected, remains unproven."
-  - "User-message extraction remains disabled because route-to-render content ownership across SPA transitions is not yet proven."
+  - "B1: Production-grade scope isolation remains unverified; persistent cross-scope cache reuse is unsafe."
+  - "B2: Authenticated unpacked-extension lifecycle smoke remains outstanding."
+  - "B3: Route-to-render content ownership remains unverified; user-message extraction must stay disabled."
 
 notes:
-  - "ACS-00 reopened on 2026-09-19 by explicit product-owner instruction solely to investigate closure of the three recorded blockers; ACS-01 remains locked."
-  - "ACS-00 closed as PRIVATE_SPIKE: the native-slot hypothesis is credible, but production safety gates are incomplete."
-  - "ACS-01 remains LOCKED; resolving ACS-00 limitations or explicitly amending the frozen design is required before advancement."
-  - "No AI, behavior-learning product algorithm, PAIA integration, Workspace management, or later-round implementation was performed."
+  - "ACS-00 was reopened on 2026-09-19 solely for three-blocker closure investigation and re-closed as PRIVATE_SPIKE."
+  - "The investigation invalidated one apparent route/content mismatch as a Chrome multi-window/Split View instrumentation artifact; it is not counted as ChatGPT evidence."
+  - "ACS-01 remains LOCKED. No AI, behavior-learning product algorithm, PAIA integration, Workspace management, or later-round implementation was performed."
