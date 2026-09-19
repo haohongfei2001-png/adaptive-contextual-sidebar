@@ -6,6 +6,8 @@
   const LEASE_TTL_MS = 1800;
   const LEASE_RENEW_MS = 500;
   const WORKER_PROBE_MS = 1000;
+  const STARTUP_RETRY_MS = 250;
+  const STARTUP_RETRY_LIMIT = 8;
   const state = {
     tabId: null,
     epoch: 0,
@@ -104,15 +106,35 @@
     return section;
   }
 
-  function tryProject(reason) {
+  function scheduleProjectionRetry(reason, attempt, expectedRoute, expectedEpoch) {
+    if (attempt >= STARTUP_RETRY_LIMIT) return;
+    setTimeout(() => {
+      if (state.mode !== "native") return;
+      if (expectedRoute !== location.pathname || expectedEpoch !== state.epoch) return;
+      tryProject(reason, attempt + 1, expectedRoute, expectedEpoch);
+    }, STARTUP_RETRY_MS);
+  }
+
+  function tryProject(reason, attempt = 0, expectedRoute = state.route, expectedEpoch = state.epoch) {
     const token = ++state.mountToken;
     restoreNative("pre-mount");
+    if (expectedRoute !== location.pathname || expectedEpoch !== state.epoch) {
+      return log("stale-projection-attempt", { reason, attempt });
+    }
     const route = core.parseRoute(location.pathname);
     if (!route.conversationId) return log("skip-projection", { reason: "non-durable-route" });
     const list = adapter.locateOrdinaryList(document);
-    if (!list || !adapter.isStillSafe(list)) return log("fail-open", { reason: "no-safe-list" });
+    if (!list || !adapter.isStillSafe(list)) {
+      log("fail-open", { reason: "no-safe-list", attempt });
+      scheduleProjectionRetry(reason, attempt, expectedRoute, expectedEpoch);
+      return;
+    }
     const refs = adapter.collectRefs(list, 4);
-    if (refs.length < 2) return log("fail-open", { reason: "insufficient-refs" });
+    if (refs.length < 2) {
+      log("fail-open", { reason: "insufficient-refs", attempt });
+      scheduleProjectionRetry(reason, attempt, expectedRoute, expectedEpoch);
+      return;
+    }
     if (token !== state.mountToken) return;
     state.nativeList = list;
     state.priorStyleAttr = list.getAttribute("style");
@@ -123,7 +145,7 @@
     state.mode = "projection";
     ensureLeaseStyle();
     renewConcealLease("mount");
-    log("projection-mounted", { reason, refs: refs.length });
+    log("projection-mounted", { reason, refs: refs.length, attempt });
   }
 
   function onRoute(route, epoch, reason) {
