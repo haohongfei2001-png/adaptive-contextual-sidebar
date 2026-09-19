@@ -29,3 +29,17 @@ test("normal restore preserves the native list's prior inline style exactly", ()
   assert.match(source, /priorStyleAttr = list\.getAttribute\("style"\)/);
   assert.match(source, /state\.nativeList\.setAttribute\("style", state\.priorStyleAttr\)/);
 });
+
+
+test("startup projection retry is bounded and route-epoch guarded", () => {
+  const retryMs = numericConst("STARTUP_RETRY_MS");
+  const retryLimit = numericConst("STARTUP_RETRY_LIMIT");
+
+  assert.ok(retryMs >= 100 && retryMs <= 500, "startup retry interval must stay short but bounded");
+  assert.ok(retryLimit > 0 && retryLimit <= 12, "startup retry count must stay bounded");
+  assert.ok(retryMs * retryLimit <= 3000, "startup retry window must remain bounded");
+
+  assert.match(source, /attempt >= STARTUP_RETRY_LIMIT/);
+  assert.match(source, /expectedRoute !== location\.pathname \|\| expectedEpoch !== state\.epoch/);
+  assert.match(source, /tryProject\(reason, attempt \+ 1, expectedRoute, expectedEpoch\)/);
+});
