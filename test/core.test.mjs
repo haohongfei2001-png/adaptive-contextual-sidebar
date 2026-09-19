@@ -44,3 +44,12 @@ test("service-worker restart handshake safely resets the local epoch on the same
   assert.deepEqual(reconciled, { safe: true, epoch: 1 });
   assert.equal(reconcileRegistration("/c/other", reply).safe, false);
 });
+
+test("same-route updates are idempotent and do not advance the navigation epoch", () => {
+  const r = createTabRegistry();
+  const first = r.update(11, "/c/a");
+  const duplicate = r.update(11, "/c/a");
+  assert.deepEqual(duplicate, first);
+  assert.equal(duplicate.epoch, 1);
+  assert.equal(r.get(11).epoch, 1);
+});
