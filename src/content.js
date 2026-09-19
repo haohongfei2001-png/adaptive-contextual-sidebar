@@ -7,7 +7,7 @@
   const LEASE_RENEW_MS = 500;
   const WORKER_PROBE_MS = 1000;
   const STARTUP_RETRY_MS = 250;
-  const STARTUP_RETRY_LIMIT = 8;
+  const STARTUP_RETRY_LIMIT = 20;
   const state = {
     tabId: null,
     epoch: 0,
@@ -151,6 +151,9 @@
   function onRoute(route, epoch, reason) {
     if (route !== location.pathname) return restoreNative("route-message-mismatch");
     if (epoch < state.epoch) return log("stale-navigation-ignored", { incomingEpoch: epoch });
+    if (epoch === state.epoch && route === state.route) {
+      return log("duplicate-navigation-ignored", { incomingEpoch: epoch, reason });
+    }
     state.route = route;
     state.epoch = epoch;
     restoreNative("route-transition");
