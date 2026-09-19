@@ -1,0 +1,9 @@
+{
+  "name": "adaptive-contextual-sidebar-acs00",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/core.js && node --check src/adapter.js && node --check src/content.js && node --check src/service-worker.js && node --test"
+  }
+}
