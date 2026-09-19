@@ -2,7 +2,7 @@ package: ACS-v0.1
 product: Adaptive Contextual Sidebar
 design_version: "0.1.0"
 design_status: DESIGN_FROZEN
-implementation_status: PRIVATE_SPIKE
+implementation_status: CAPABILITY_SPIKE
 source_of_truth: github_remote_main
 
 canonical:
@@ -14,10 +14,10 @@ canonical:
 current_round:
   id: ACS-00
   title: Live Capability Spike
-  status: PRIVATE_SPIKE
+  status: IN_PROGRESS
   authorized: true
-  outcome: PRIVATE_SPIKE
-  closed_on: "2026-09-19"
+  previous_outcome: PRIVATE_SPIKE
+  investigation_scope: B2_AUTHENTICATED_MV3_RECOVERY_ONLY
   report: docs/reports/ACS-00_CAPABILITY_REPORT.md
   blocker_closure_report: docs/reports/ACS-00_BLOCKER_CLOSURE_INVESTIGATION.md
 
@@ -28,7 +28,7 @@ next_round:
   requires_new_owner_instruction: true
 
 rounds:
-  ACS-00: PRIVATE_SPIKE
+  ACS-00: IN_PROGRESS
   ACS-01: LOCKED
   ACS-02: LOCKED
   ACS-03: LOCKED
@@ -61,6 +61,7 @@ blockers:
   - "B3: Route-to-render content ownership remains unverified; user-message extraction must stay disabled."
 
 notes:
+  - "ACS-00 reopened on 2026-09-19 by explicit product-owner continuation solely for B2 authenticated MV3 recovery closure; ACS-01 remains locked."
   - "ACS-00 was reopened on 2026-09-19 solely for three-blocker closure investigation and re-closed as PRIVATE_SPIKE."
   - "The investigation invalidated one apparent route/content mismatch as a Chrome multi-window/Split View instrumentation artifact; it is not counted as ChatGPT evidence."
   - "ACS-01 remains LOCKED. No AI, behavior-learning product algorithm, PAIA integration, Workspace management, or later-round implementation was performed."
