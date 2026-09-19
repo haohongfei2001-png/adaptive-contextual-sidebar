@@ -14,12 +14,13 @@ canonical:
 current_round:
   id: ACS-00
   title: Live Capability Spike
-  status: IN_PROGRESS
-  authorized: true
+  status: BLOCKED
+  authorized: false
   previous_outcome: PRIVATE_SPIKE
   investigation_scope: B2_AUTHENTICATED_MV3_RECOVERY_ONLY
   report: docs/reports/ACS-00_CAPABILITY_REPORT.md
   blocker_closure_report: docs/reports/ACS-00_BLOCKER_CLOSURE_INVESTIGATION.md
+  recovery_receipt: docs/reports/ACS-00_B2_RECOVERY_RECEIPT.md
 
 next_round:
   id: ACS-01
@@ -28,7 +29,7 @@ next_round:
   requires_new_owner_instruction: true
 
 rounds:
-  ACS-00: IN_PROGRESS
+  ACS-00: BLOCKED
   ACS-01: LOCKED
   ACS-02: LOCKED
   ACS-03: LOCKED
@@ -49,19 +50,23 @@ blocker_closure:
     status: CONFIRMED_UNRESOLVED
     summary: "No stable verifiable public account/native-workspace scope key has been proven; same-browser account switching makes browser/session/install identifiers unsafe as scope keys."
   B2_authenticated_mv3_recovery:
-    status: TEST_ENVIRONMENT_BLOCKED
-    summary: "Authenticated developer-mode load/reload/disable recovery remains unproven; macOS denied coordinate assistive automation and no Chrome DevTools extension-lifecycle connector was available."
+    status: BLOCKED
+    summary: "Authenticated developer-mode ACS execution and projection/Others restore were observed, but exact-head cce8d962 lifecycle certification is incomplete: reload was not proven and no complete disable -> native fail-open -> re-enable/reload/refresh -> reconnect -> reprojection chain was captured."
   B3_route_content_ownership:
     status: SAFE_FAIL_CLOSED_UNVERIFIED
     summary: "No reliable route-to-render ownership proof was established; remote-main ACS-00 runtime contains no conversation-body/user-message extraction path, so extraction remains disabled."
 
 blockers:
   - "B1: Production-grade scope isolation remains unverified; persistent cross-scope cache reuse is unsafe."
-  - "B2: Authenticated unpacked-extension lifecycle smoke remains outstanding."
+  - "B2: Exact-head authenticated MV3 reload/disable recovery evidence is incomplete; do not advance or claim lifecycle PASS."
   - "B3: Route-to-render content ownership remains unverified; user-message extraction must stay disabled."
 
 notes:
-  - "ACS-00 reopened on 2026-09-19 by explicit product-owner continuation solely for B2 authenticated MV3 recovery closure; ACS-01 remains locked."
-  - "ACS-00 was reopened on 2026-09-19 solely for three-blocker closure investigation and re-closed as PRIVATE_SPIKE."
+  - "ACS-00 blocked on 2026-09-20 after recovery closure: real authenticated unpacked execution was observed, but the exact current HEAD did not obtain a complete reload/disable/re-enable recovery proof."
+  - "Recovery receipt: docs/reports/ACS-00_B2_RECOVERY_RECEIPT.md."
+  - "Exact inspected runtime HEAD cce8d9620e912b3ca27027dab675bb6d91207777 passed npm run check with 11 tests passed and 0 failed."
+  - "No required GitHub workflow or commit-status checks are configured/present for the inspected HEAD; no CI PASS is claimed."
+  - "Further runtime-code retries were explicitly stopped for this closure; ACS-01 remains locked."
+  - "ACS-00 was reopened on 2026-09-19 solely for three-blocker closure investigation and later B2 recovery closure."
   - "The investigation invalidated one apparent route/content mismatch as a Chrome multi-window/Split View instrumentation artifact; it is not counted as ChatGPT evidence."
-  - "ACS-01 remains LOCKED. No AI, behavior-learning product algorithm, PAIA integration, Workspace management, or later-round implementation was performed."
+  - "No AI, behavior-learning product algorithm, PAIA integration, Workspace management, or later-round implementation was performed."
